@@ -1,0 +1,46 @@
+class EventDAO(BaseDAO):
+
+    def get_by_cours(self, id_cours):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM seances
+            WHERE id_cours=?
+            """,
+            (id_cours,)
+        )
+
+        return cursor.fetchall()
+
+    def get_by_date_range(self, start, end):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM seances
+            WHERE date BETWEEN ? AND ?
+            """,
+            (start, end)
+        )
+
+        return cursor.fetchall()
+
+    def update_sync_status(self, id_seance, status):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            UPDATE seances
+            SET statut_synchro=?
+            WHERE id_seance=?
+            """,
+            (status, id_seance)
+        )
+
+        self.conn.commit()

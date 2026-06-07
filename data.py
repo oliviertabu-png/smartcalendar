@@ -1,113 +1,94 @@
-from dataclasses import dataclass
-from datetime import date, time
-from enum import Enum, auto
-
-from typing_extensions import List
+import sqlite3
 
 
-class PromotionDTO:
-    # Data Transfer Object for Promotion
-    def __init__(self, id_promotion: int, nom_promo: str, annee_academique: str):
-        self.id_promotion = id_promotion
-        self.nom_promo = nom_promo
-        self.annee_academique = annee_academique
-
-        self.etudiants: List[EtudiantDTO] = []
-        self.unites_enseignement: List[UniteEnseignementDTO] = []
-
-@dataclass
-class EtudiantDTO:
-    def __init__(
-        self,
-        id_etudiant: int,
-        matricule: str,
-        nom: str,
-        prenom: str,
-        email: str,
-        promotion_id: int,
-    ):
-        self.id_etudiant = id_etudiant
-        self.matricule = matricule
-        self.nom = nom
-        self.prenom = prenom
-        self.email = email
-        self.promotion_id = promotion_id
+def get_connection():
+    return sqlite3.connect("smartcalendar.db")
 
 
-class UniteEnseignementDTO:
-    def __init__(
-        self,
-        id_ue: int,
-        code_ue: str,
-        intitule: str,
-        credit_ects: int,
-        promotion_id: int,
-    ):
-        self.id_ue = id_ue
-        self.code_ue = code_ue
-        self.intitule = intitule
-        self.credit_ects = credit_ects
-        self.promotion_id = promotion_id
-        self.cours: List[CoursDTO] = []
+def init_database():
 
+    conn = get_connection()
+    cursor = conn.cursor()
 
-class EnseignantDTO:
-    def __init__(
-        self,
-        id_enseignant: int,
-        nom: str,
-        prenom: str,
-        email: str,
-    ):
-        self.id_enseignant = id_enseignant
-        self.nom = nom
-        self.prenom = prenom
-        self.email = email
-        self.cours: List[CoursDTO] = []
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users(
+        id INTEGER PRIMARY KEY,
+        email TEXT NOT NULL,
+        role TEXT NOT NULL,
+        google_linked BOOLEAN DEFAULT 0
+    )
+    """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS promotions(
+        id_promotion INTEGER PRIMARY KEY,
+        nom_promo TEXT NOT NULL,
+        annee_academique TEXT NOT NULL
+    )
+    """)
 
-class CoursDTO:
-    def __init__(
-        self,
-        id_cours: int,
-        intitule: str,
-        volume_horaire: int,
-        ue_id: int,
-        enseignant_id: int,
-    ):
-        self.id_cours = id_cours
-        self.intitule = intitule
-        self.volume_horaire = volume_horaire
-        self.ue_id = ue_id
-        self.enseignant_id = enseignant_id
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS etudiants(
+        id_etudiant INTEGER PRIMARY KEY,
+        matricule TEXT UNIQUE,
+        nom TEXT,
+        prenom TEXT,
+        email TEXT,
+        id_promotion INTEGER
+    )
+    """)
 
-        self.seances: List[SeanceDTO] = []
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS enseignants(
+        id_enseignant INTEGER PRIMARY KEY,
+        nom TEXT,
+        prenom TEXT,
+        email TEXT
+    )
+    """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS unite_enseignement(
+        id_ue INTEGER PRIMARY KEY,
+        code_ue TEXT,
+        intitule TEXT,
+        credits_ects INTEGER,
+        id_promotion INTEGER
+    )
+    """)
 
-class TypeSeance(Enum):
-    COURS_MAGISTRAL = auto()
-    TD = auto()
-    TP = auto()
-    EXAMEN = auto()
-    AUTRE_EVENEMENT = auto()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS cours(
+        id_cours INTEGER PRIMARY KEY,
+        intitule_cours TEXT,
+        volume_horaire INTEGER,
+        id_ue INTEGER
+    )
+    """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS seances(
+        id_seance INTEGER PRIMARY KEY,
+        titre TEXT,
+        date TEXT,
+        heure_debut TEXT,
+        heure_fin TEXT,
+        salle TEXT,
+        statut_synchro TEXT,
+        type TEXT,
+        id_cours INTEGER
+    )
+    """)
 
-class SeanceDTO:
-    def __init__(
-        self,
-        id_seance: int,
-        date_seance: date,
-        heure_debut: time,
-        heure_fin: time,
-        salle: str,
-        est_synchro: bool,
-        cours_id: int,
-        type: TypeSeance,
-    ):
-        self.id_seance = id_seance
-        self.date = date_seance
-        self.heure_debut = heure_debut
-        self.heure_fin = heure_fin
-        self.salle = salle
-        self.est_synchro = est_synchro
-        self.cours_id = cours_id
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS notifications(
+        id_notif INTEGER PRIMARY KEY,
+        type TEXT,
+        destinataires TEXT,
+        message TEXT,
+        date_envoi TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()

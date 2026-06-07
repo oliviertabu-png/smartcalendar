@@ -1,0 +1,16 @@
+class CoursDAO(BaseDAO):
+
+    def get_by_ue(self, id_ue):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM cours
+            WHERE id_ue=?
+            """,
+            (id_ue,)
+        )
+
+        return cursor.fetchall()

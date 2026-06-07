@@ -1,0 +1,7 @@
+class BaseDAO:
+
+    def __init__(self):
+        self.conn = get_connection()
+
+    def close(self):
+        self.conn.close()

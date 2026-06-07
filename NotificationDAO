@@ -1,0 +1,11 @@
+class NotificationDAO(BaseDAO):
+
+    def get_history(self):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            "SELECT * FROM notifications"
+        )
+
+        return cursor.fetchall()

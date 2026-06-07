@@ -1,0 +1,15 @@
+class UserDAO(BaseDAO):
+
+    def get_by_email(self, email):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            "SELECT * FROM users WHERE email=?",
+            (email,)
+        )
+
+        return cursor.fetchone()
+
+    def update_token(self, user_id, token):
+        pass

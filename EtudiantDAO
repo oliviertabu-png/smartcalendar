@@ -1,0 +1,16 @@
+class EtudiantDAO(BaseDAO):
+
+    def get_by_promotion(self, id_promotion):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM etudiants
+            WHERE id_promotion=?
+            """,
+            (id_promotion,)
+        )
+
+        return cursor.fetchall()

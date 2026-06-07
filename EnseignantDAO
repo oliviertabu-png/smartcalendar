@@ -1,0 +1,14 @@
+class EnseignantDAO(BaseDAO):
+
+    def get_by_ue(self, id_ue):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM enseignants
+            """
+        )
+
+        return cursor.fetchall()
